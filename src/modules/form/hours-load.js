@@ -5,6 +5,10 @@ import { hoursClick } from "./hours-click.js";
 const hours = document.getElementById("hours");
 
 export function hoursLoad({ date }) {
+
+  // limpa a lista de horario
+    hours.innerHTML = ""
+
   const opening = openingHours.map((hour) => {
     // recupera a hora
     const [scheduleHour] = hour.split(":");
@@ -21,7 +25,7 @@ export function hoursLoad({ date }) {
   });
 
   //  renderiza os horarios.
-  opening.forEach(({ hour, avaliable }) => {
+  opening.forEach(({ hour, avaliable }) => {   
     const li = document.createElement("li");
     li.classList.add("hour");
     li.classList.add(avaliable ? "hour-available" : "hour-unavailable");
