@@ -1,39 +1,46 @@
 import dayjs from "dayjs";
+
 import { openingHours } from "../../utils/opening-hours.js";
 import { hoursClick } from "./hours-click.js";
 
 const hours = document.getElementById("hours");
 
-export function hoursLoad({ date }) {
-
+export function hoursLoad({ date, dailySchedules }) {
   // limpa a lista de horario
-    hours.innerHTML = ""
+  hours.innerHTML = "";
+
+  // lista de horários já agendados
+  const unavailableHours = dailySchedules.map((schedule) =>
+    dayjs(schedule.when).format("HH:mm")
+  );
 
   const opening = openingHours.map((hour) => {
-    // recupera a hora
+    // recupera a hora e transforma em número
     const [scheduleHour] = hour.split(":");
+    const scheduleHourNumber = parseInt(scheduleHour, 10); // Converte para número
 
-    //  adiciona a hora e date p verificar se esta no passado
+    // adiciona a hora à data para verificar se está no passado
+    const isHourPast = dayjs(date).hour(scheduleHourNumber).isBefore(dayjs());
 
-    const isHourPast = dayjs(date).add(scheduleHour, "hour").isAfter(dayjs()); // data esta no passado
+    // se o horário está na lista de agendados ou está no passado, ele fica indisponível
+    const available = !unavailableHours.includes(hour) && !isHourPast;
 
-    // hr disponivel
     return {
       hour,
-      avaliable: isHourPast,
+      available,
     };
   });
 
-  //  renderiza os horarios.
-  opening.forEach(({ hour, avaliable }) => {   
+  // renderiza os horários.
+  opening.forEach(({ hour, available }) => { // Corrigido: "available"
     const li = document.createElement("li");
     li.classList.add("hour");
-    li.classList.add(avaliable ? "hour-available" : "hour-unavailable");
+    li.classList.add(available ? "hour-available" : "hour-unavailable");
 
     li.textContent = hour;
 
-    if (hour === "9:00") {
-      hourHeaderAdd("Manha");
+    if (hour === "09:00") {
+      hourHeaderAdd("Manhã");
     } else if (hour === "13:00") {
       hourHeaderAdd("Tarde");
     } else if (hour === "18:00") {
@@ -43,13 +50,11 @@ export function hoursLoad({ date }) {
     hours.append(li);
   });
 
-
-  // adic event de click no hor disponivel
-  hoursClick()
+  // adiciona evento de clique nos horários disponíveis
+  hoursClick();
 }
 
-// separar por turno
-
+// separa por turno
 function hourHeaderAdd(title) {
   const header = document.createElement("li");
   header.classList.add("hour-period");
